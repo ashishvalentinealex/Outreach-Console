@@ -1,4 +1,4 @@
-# TKT Outreach Console
+# Outreach Console
 
 Internal campaign management tool for **TKT Church Online Campus**.  
 Send personalised Email and WhatsApp messages to contacts from a spreadsheet.
@@ -21,7 +21,7 @@ Send personalised Email and WhatsApp messages to contacts from a spreadsheet.
 ## Project Structure
 
 ```
-church-sys/
+Outreach-Console/
 ├── app/
 │   ├── main.py               # Flask routes
 │   ├── email_sender.py       # Gmail / yagmail logic
@@ -30,11 +30,8 @@ church-sys/
 │   │   └── tkt-logo.png      # TKT Church logo (served at /static/)
 │   └── templates/
 │       └── index.html        # Single-page UI
-├── chrome_profile/           # WhatsApp session (persists between runs)
-├── images/                   # Uploaded flyer images
-├── uploads/                  # Uploaded contact spreadsheets
-├── logs/                     # App logs
 ├── .env                      # Secrets — never commit this file
+├── .env.example              # Template for .env
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
@@ -46,16 +43,17 @@ church-sys/
 
 ## First-Time Setup
 
-### 1. Clone / copy the project folder
+### 1. Clone the repo
 
 ```bash
-cd /home/user/Documents/church-sys
+git clone <repository_url>
+cd Outreach-Console
 ```
 
 ### 2. Create the `.env` file
 
 ```bash
-cp .env.example .env   # if example exists, otherwise create manually
+cp .env.example .env
 ```
 
 Edit `.env`:
@@ -69,13 +67,6 @@ IMAGE_PATH=/tmp/images/church_flyer.jpeg
 > `SENDER_PASSWORD` must be a Gmail **App Password**, not your regular password.  
 > See the `(i)` button next to the App Password field in the UI for step-by-step instructions.
 
-### 3. Create Docker volumes (one time only)
-
-```bash
-docker volume create church_chrome
-docker volume create church_images
-```
-
 ---
 
 ## Starting the App
@@ -85,9 +76,10 @@ docker volume create church_images
 ```
 
 This will:
-1. Build the Docker image
-2. Stop any previous container
-3. Start a fresh container on port **5000**
+1. Create Docker volumes automatically (first run only)
+2. Build the Docker image
+3. Stop any previous container
+4. Start a fresh container on port **5000**
 
 Then open: **http://localhost:5000**
 
@@ -130,8 +122,8 @@ Use `{first_name}` anywhere in the subject or body to personalise the message.
 
 - Click **Connect WhatsApp** to launch WhatsApp Web inside the container.
 - Scan the QR code with your phone once.
-- Your session is saved in the `church_chrome` Docker volume — **you will not need to scan again** on subsequent runs as long as the volume exists.
-- To force a fresh login: click **Reset session** in the UI, or run `docker volume rm church_chrome && docker volume create church_chrome`.
+- Your session is saved in the `outreach-console_chrome` Docker volume — **you will not need to scan again** on subsequent runs as long as the volume exists.
+- To force a fresh login: click **Reset session** in the UI, or run `docker volume rm outreach-console_chrome && docker volume create outreach-console_chrome`.
 
 ---
 
@@ -147,7 +139,7 @@ Use `{first_name}` anywhere in the subject or body to personalise the message.
 ## Viewing Live Logs
 
 ```bash
-docker logs -f church-test
+docker logs -f outreach-console
 ```
 
 Every step of WhatsApp automation is logged in detail (contact name, DOM state, file inputs, send status).
@@ -180,7 +172,7 @@ The image is rebuilt automatically on each `start.sh` run.
 ## Secrets & Security
 
 - **Never commit `.env`** — it contains your Gmail App Password.
-- The `church_chrome` volume contains your WhatsApp session cookie. Keep the host machine secure.
+- The `outreach-console_chrome` volume contains your WhatsApp session cookie. Keep the host machine secure.
 - This tool is for **internal use only** — do not expose port 5000 to the public internet without adding authentication.
 
 ---
@@ -192,5 +184,5 @@ The image is rebuilt automatically on each `start.sh` run.
 | WhatsApp QR not appearing | Wait 15 seconds, check `/debug` view, click Reset and try again |
 | Image sent as sticker | Should not happen — the automation clicks "Photos & videos" before attaching |
 | Gmail authentication error | Ensure App Password is correct and 2-Step Verification is enabled |
-| Container won't start | Run `docker logs church-test` to see the error |
+| Container won't start | Run `docker logs outreach-console` to see the error |
 | Port 5000 already in use | Run `./stop.sh` first, or change `-p 5000:5000` to `-p 5001:5000` in `start.sh` |
