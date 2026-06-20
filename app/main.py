@@ -1,4 +1,5 @@
 import os
+import sys
 import uuid
 import queue
 import threading
@@ -10,19 +11,25 @@ from werkzeug.utils import secure_filename
 import pandas as pd
 from dotenv import load_dotenv
 
+from .paths import DATA_DIR, UPLOADS_DIR, IMAGES_DIR, DOCUMENTS_DIR
 from .email_sender import send_emails
 from .whatsapp_sender import WhatsAppSender
 
-load_dotenv()
+load_dotenv(DATA_DIR / ".env")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
-app.config["UPLOAD_FOLDER"] = "/tmp/uploads"
-app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024
+# Resolve template/static dirs so Flask finds them when frozen by PyInstaller
+if getattr(sys, 'frozen', False):
+    _app_dir = os.path.join(sys._MEIPASS, 'app')
+    app = Flask(__name__,
+                template_folder=os.path.join(_app_dir, 'templates'),
+                static_folder=os.path.join(_app_dir, 'static'))
+else:
+    app = Flask(__name__)
 
-os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-os.makedirs("/tmp/images", exist_ok=True)
+app.config["UPLOAD_FOLDER"] = str(UPLOADS_DIR)
+app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024
 
 # In-memory job store: job_id -> {status, progress, total, log, queue}
 _jobs: dict = {}
@@ -96,7 +103,7 @@ def upload_image():
     if not f:
         return jsonify({"error": "No image provided"}), 400
     filename = secure_filename(f.filename)
-    path = os.path.join("/tmp/images", filename)
+    path = os.path.join(str(IMAGES_DIR), filename)
     f.save(path)
     return jsonify({"image_path": path})
 
@@ -109,8 +116,7 @@ def upload_document():
     filename = secure_filename(f.filename)
     if not filename.lower().endswith((".pdf", ".xlsx", ".xls", ".csv")):
         return jsonify({"error": "Only PDF, XLSX, XLS, or CSV files are supported"}), 400
-    os.makedirs("/tmp/documents", exist_ok=True)
-    path = os.path.join("/tmp/documents", filename)
+    path = os.path.join(str(DOCUMENTS_DIR), filename)
     f.save(path)
     return jsonify({"doc_path": path})
 
@@ -182,7 +188,7 @@ def debug_view():
     return """<!DOCTYPE html>
 <html>
 <head>
-  <title>🔴 Live WhatsApp View</title>
+  <title>Live WhatsApp View</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #0f172a; font-family: sans-serif; display: flex;
@@ -230,8 +236,7 @@ def debug_screenshot():
             return Response(png, mimetype="image/png")
         except Exception:
             pass
-    placeholder = b""
-    return Response(placeholder, mimetype="image/png")
+    return Response(b"", mimetype="image/png")
 
 
 @app.route("/wa/reset", methods=["POST"])

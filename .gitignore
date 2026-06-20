@@ -14,6 +14,11 @@ __pycache__/
 *.pyd
 .Python
 
+# PyInstaller build artifacts
+dist/
+build/
+*.spec.bak
+
 # OS
 .DS_Store
 Thumbs.db

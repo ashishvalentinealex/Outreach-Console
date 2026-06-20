@@ -3,14 +3,16 @@ import os
 import yagmail
 from PIL import Image
 
+from .paths import RESIZED_IMAGE
 
-RESIZED_PATH = "/tmp/TKT_CHURCH.jpeg"
+RESIZED_PATH = RESIZED_IMAGE
 
 
 def _resize_image(image_path: str) -> str:
-    os.makedirs(os.path.dirname(RESIZED_PATH), exist_ok=True)
     with Image.open(image_path) as im:
         im.thumbnail((600, 600))
+        if im.mode in ("RGBA", "LA", "P"):
+            im = im.convert("RGB")
         im.save(RESIZED_PATH, format="JPEG")
     return RESIZED_PATH
 
@@ -19,7 +21,6 @@ def _extract_first_name(full_name: str) -> str:
     parts = str(full_name).strip().split()
     if not parts:
         return full_name
-    # Skip single-char prefixes like "Dr", "Mr" etc. (len <= 2)
     first = parts[1] if len(parts) > 1 and len(parts[0]) <= 2 else parts[0]
     return first.capitalize()
 
@@ -56,7 +57,6 @@ def send_emails(df, message_template, subject_template, sender, password, image_
 
         name = str(row[name_col]).strip() if name_col else email
         first_name = _extract_first_name(name)
-
         subject = subject_template.format(first_name=first_name)
         body = message_template.format(first_name=first_name)
 
