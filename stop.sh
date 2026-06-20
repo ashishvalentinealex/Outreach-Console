@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-CONTAINER="church-test"
+APP="outreach-console"
 
-echo "==> Stopping container: $CONTAINER"
-docker stop "$CONTAINER" 2>/dev/null && echo "  Stopped." || echo "  Container was not running."
+echo "==> Stopping container: $APP"
+docker stop "$APP" 2>/dev/null && echo "  Stopped." || echo "  Container was not running."
 
-echo "==> Removing container: $CONTAINER"
-docker rm "$CONTAINER" 2>/dev/null || true
+echo "==> Removing container: $APP"
+docker rm "$APP" 2>/dev/null || true
 
 echo "  Done."
