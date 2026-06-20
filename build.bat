@@ -25,6 +25,10 @@ if %ERRORLEVEL% neq 0 (
     pause & exit /b 1
 )
 
+echo =^> Closing any running OutreachConsole instance...
+taskkill /f /im OutreachConsole.exe 2>nul
+timeout /t 2 /nobreak >nul
+
 echo =^> Building Windows executable...
 pyinstaller OutreachConsole.spec --clean
 if %ERRORLEVEL% neq 0 (
