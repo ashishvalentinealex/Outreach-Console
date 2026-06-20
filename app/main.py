@@ -168,11 +168,15 @@ def start_email():
 @app.route("/wa/start", methods=["POST"])
 def wa_start():
     global _wa_sender
-    with _wa_lock:
-        if _wa_sender is None:
-            _wa_sender = WhatsAppSender()
-        _wa_sender.start()
-    return jsonify({"status": "started"})
+    try:
+        with _wa_lock:
+            if _wa_sender is None:
+                _wa_sender = WhatsAppSender()
+            _wa_sender.start()
+        return jsonify({"status": "started"})
+    except Exception as e:
+        logger.error("Failed to start WhatsApp: %s", e, exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/wa/qr")
@@ -242,11 +246,15 @@ def debug_screenshot():
 @app.route("/wa/reset", methods=["POST"])
 def wa_reset():
     global _wa_sender
-    with _wa_lock:
-        if _wa_sender:
-            _wa_sender.quit()
-        _wa_sender = None
-    return jsonify({"status": "reset"})
+    try:
+        with _wa_lock:
+            if _wa_sender:
+                _wa_sender.quit()
+            _wa_sender = None
+        return jsonify({"status": "reset"})
+    except Exception as e:
+        logger.error("Failed to reset WhatsApp: %s", e, exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/send/whatsapp", methods=["POST"])
