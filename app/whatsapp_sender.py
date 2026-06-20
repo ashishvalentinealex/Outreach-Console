@@ -113,6 +113,13 @@ def _build_chrome_options() -> webdriver.ChromeOptions:
     opts.add_argument(f"--user-agent={ua}")
     opts.add_experimental_option("excludeSwitches", ["enable-automation"])
     opts.add_experimental_option("useAutomationExtension", False)
+
+    # On Linux, point Chrome at the system Chromium binary
+    if sys.platform != "win32":
+        binary = os.getenv("CHROMIUM_BIN", "/usr/bin/chromium")
+        if os.path.exists(binary):
+            opts.binary_location = binary
+
     return opts
 
 
@@ -145,8 +152,14 @@ class WhatsAppSender:
 
         opts = _build_chrome_options()
 
-        logger.info("STEP: Downloading/verifying ChromeDriver via webdriver-manager...")
-        service = Service(ChromeDriverManager().install())
+        if sys.platform == "win32":
+            logger.info("STEP: Downloading/verifying ChromeDriver via webdriver-manager...")
+            service = Service(ChromeDriverManager().install())
+        else:
+            # On Linux use the system ChromeDriver — it always matches the installed Chromium
+            system_driver = os.getenv("CHROMEDRIVER_PATH", "/usr/bin/chromedriver")
+            logger.info("STEP: Using system ChromeDriver at %s", system_driver)
+            service = Service(executable_path=system_driver)
 
         self.driver = webdriver.Chrome(service=service, options=opts)
         logger.info("STEP: Chrome launched. Hiding webdriver flag...")
