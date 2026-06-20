@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TKT Online Campus — Outreach Campaign Console</title>
+<style>
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #09090b;
+  --surface:     #141416;
+  --surface-2:   #1c1c1f;
+  --surface-3:   #232326;
+  --border:      #2e2e33;
+  --border-2:    #3d3d44;
+  --text:        #f4f4f5;
+  --text-2:      #a1a1aa;
+  --text-3:      #71717a;
+  --accent:      #7c3aed;
+  --accent-2:    #9f67fa;
+  --accent-bg:   rgba(124,58,237,0.08);
+  --accent-border: rgba(124,58,237,0.25);
+  --success:     #4ade80;
+  --success-bg:  rgba(74,222,128,0.07);
+  --success-border: rgba(74,222,128,0.2);
+  --danger:      #f87171;
+  --danger-bg:   rgba(248,113,113,0.07);
+  --danger-border: rgba(248,113,113,0.2);
+  --font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --r: 6px;
+  --r-lg: 10px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow: 0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
+}
+
+html { font-size: 14px; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ── */
+.layout { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── Top nav ── */
+.topnav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  height: 72px;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  gap: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+/* TKT logo — real PNG with black bg sits flush on dark nav */
+.nav-logomark {
+  height: 56px;
+  width: auto;
+  flex-shrink: 0;
+  display: block;
+  border-radius: 8px;
+}
+
+.nav-divider {
+  width: 1px;
+  height: 26px;
+  background: var(--border);
+}
+
+.nav-appname {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  gap: 3px;
+}
+
+.nav-appname-main {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.nav-appname-sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.nav-spacer { flex: 1; }
+
+.nav-badge {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  padding: 3px 9px;
+}
+
+/* ── Main content ── */
+.main {
+  flex: 1;
+  max-width: 880px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 36px 24px 64px;
+}
+
+/* ── Step track ── */
+.step-track {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.step-node {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border-2);
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.step-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.step-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  margin: 0 16px;
+}
+
+/* States */
+#step-1.active .step-num,
+#step-2.active .step-num,
+#step-3.active .step-num,
+#step-4.active .step-num {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+#step-1.active .step-name,
+#step-2.active .step-name,
+#step-3.active .step-name,
+#step-4.active .step-name { color: var(--text); }
+
+#step-1.done .step-num,
+#step-2.done .step-num,
+#step-3.done .step-num,
+#step-4.done .step-num {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success);
+}
+
+#step-1.done .step-name,
+#step-2.done .step-name,
+#step-3.done .step-name,
+#step-4.done .step-name { color: var(--text-3); }
+
+/* ── Panel ── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-header h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.panel-header .panel-desc {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-left: auto;
+}
+
+.panel-body { padding: 24px; }
+
+.panel-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  background: var(--surface-2);
+}
+
+/* ── Drop zone ── */
+.dropzone {
+  border: 1px dashed var(--border-2);
+  border-radius: var(--r);
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: var(--surface-2);
+}
+
+.dropzone:hover, .dropzone.drag-over {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.dropzone-icon {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 14px;
+  opacity: 0.5;
+}
+
+.dropzone h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.dropzone p {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.dropzone .tag-row {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.tag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 7px;
+}
+
+/* ── File result ── */
+.file-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.file-bar-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-bar-count {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent-2);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 3px;
+  padding: 2px 9px;
+  white-space: nowrap;
+}
+
+/* ── Table ── */
+.tbl-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+thead tr { background: var(--surface-2); }
+
+th {
+  padding: 9px 12px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface-2); }
+
+/* ── Mode grid ── */
+.mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.mode-card {
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 24px 20px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: var(--surface-2);
+  position: relative;
+}
+
+/* Gmail card — red on hover/select */
+#mode-email:hover {
+  border-color: rgba(234,67,53,0.55);
+  background: rgba(234,67,53,0.06);
+}
+#mode-email.selected {
+  border-color: rgba(234,67,53,0.7);
+  background: rgba(234,67,53,0.08);
+}
+#mode-email.selected::after {
+  content: '';
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #EA4335;
+}
+/* transition icon fills */
+#mode-email .gmail-env   { transition: fill 0.2s; fill: #3d3d44; }
+#mode-email .gmail-flap  { transition: fill 0.2s; fill: #3d3d44; }
+#mode-email .gmail-body  { transition: fill 0.2s; fill: #27272a; }
+#mode-email:hover .gmail-env,
+#mode-email.selected .gmail-env   { fill: #c5221f; }
+#mode-email:hover .gmail-flap,
+#mode-email.selected .gmail-flap  { fill: #EA4335; }
+#mode-email:hover .gmail-body,
+#mode-email.selected .gmail-body  { fill: #f1f3f4; }
+
+/* WhatsApp card — green on hover/select */
+#mode-whatsapp:hover {
+  border-color: rgba(37,211,102,0.45);
+  background: rgba(37,211,102,0.06);
+}
+#mode-whatsapp.selected {
+  border-color: rgba(37,211,102,0.6);
+  background: rgba(37,211,102,0.08);
+}
+#mode-whatsapp.selected::after {
+  content: '';
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #25D366;
+}
+/* transition icon fills */
+#mode-whatsapp .wa-bg    { transition: fill 0.2s; fill: #3d3d44; }
+#mode-whatsapp .wa-bubble { transition: fill 0.2s; fill: #27272a; }
+#mode-whatsapp .wa-phone  { transition: fill 0.2s; fill: #3d3d44; }
+#mode-whatsapp:hover .wa-bg,
+#mode-whatsapp.selected .wa-bg    { fill: #25D366; }
+#mode-whatsapp:hover .wa-bubble,
+#mode-whatsapp.selected .wa-bubble { fill: white; }
+#mode-whatsapp:hover .wa-phone,
+#mode-whatsapp.selected .wa-phone  { fill: #25D366; }
+
+.mode-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+}
+
+.mode-card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 5px;
+}
+
+.mode-card p {
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+
+/* ── Form ── */
+.form-section { margin-bottom: 0; }
+.form-section + .form-section { padding-top: 20px; }
+
+.field { margin-bottom: 16px; }
+.field:last-child { margin-bottom: 0; }
+
+.field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+
+.field-opt { font-weight: 400; color: var(--text-3); margin-left: 4px; }
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r);
+  padding: 9px 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: var(--font);
+  transition: border-color 0.15s;
+  line-height: 1.4;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+input::placeholder, textarea::placeholder { color: var(--text-3); }
+
+select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2371717a'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+textarea { resize: vertical; min-height: 130px; font-size: 13px; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.hint {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 5px;
+  line-height: 1.5;
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent-2);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+/* Password toggle */
+.pw-field { position: relative; }
+.pw-field input { padding-right: 40px; }
+
+.pw-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-3);
+  padding: 2px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.pw-btn:hover { color: var(--text-2); }
+.pw-btn svg { display: block; width: 16px; height: 16px; }
+
+/* Info icon + popover */
+.info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--border-2);
+  background: none;
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 700;
+  font-style: italic;
+  font-family: Georgia, serif;
+  cursor: pointer;
+  line-height: 1;
+  margin-left: 6px;
+  vertical-align: middle;
+  transition: border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.info-btn:hover { border-color: var(--accent-2); color: var(--accent-2); }
+
+.info-popover-wrap { position: relative; display: inline-block; }
+
+.info-popover {
+  display: none;
+  position: absolute;
+  right: 0;
+  left: auto;
+  top: calc(100% + 8px);
+  width: 360px;
+  background: var(--surface-3);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  z-index: 200;
+  box-shadow: var(--shadow-lg);
+}
+
+.info-popover.open { display: block; }
+
+.info-popover h4 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+  letter-spacing: 0.02em;
+}
+
+.info-popover .prereq {
+  font-size: 11px;
+  color: var(--accent-2);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  padding: 7px 10px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.info-popover ol {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.7;
+}
+
+.info-popover ol li { margin-bottom: 3px; }
+.info-popover ol li:last-child { margin-bottom: 0; }
+
+.info-popover .pw-note {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-3);
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+@media (max-width: 620px) {
+  .info-popover { width: calc(100vw - 48px); left: auto; right: 0; }
+}
+
+/* Attach row */
+.attach-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r);
+  padding: 8px 12px;
+}
+
+.attach-label {
+  font-size: 12px;
+  color: var(--text-3);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attach-label.ok { color: var(--success); }
+
+/* Preset row */
+.preset-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.preset-chip {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 11px;
+  border-radius: 20px;
+  border: 1px solid var(--border-2);
+  background: var(--surface-2);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.preset-chip:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--accent-2);
+}
+
+/* ── Custom templates ── */
+.tmpl-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.tmpl-bar-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.tmpl-bar-count {
+  font-size: 10px;
+  color: var(--text-3);
+}
+
+.tmpl-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+  min-height: 0;
+}
+
+.tmpl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  background: var(--surface-3);
+  border: 1px solid var(--border-2);
+  border-radius: 5px;
+  overflow: hidden;
+  max-width: 200px;
+  transition: border-color 0.15s;
+}
+
+.tmpl-chip:hover { border-color: var(--accent-border); }
+
+.tmpl-chip-load {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-2);
+  padding: 5px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: var(--font);
+  transition: color 0.15s;
+}
+
+.tmpl-chip-load:hover { color: var(--accent-2); }
+
+.tmpl-chip-del {
+  padding: 5px 8px;
+  background: none;
+  border: none;
+  border-left: 1px solid var(--border);
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+
+.tmpl-chip-del:hover { color: var(--danger); background: var(--danger-bg); }
+
+.tmpl-save-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.tmpl-save-row input[type="text"] {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.tmpl-save-trigger {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 11px;
+  border-radius: 20px;
+  border: 1px dashed var(--border-2);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.tmpl-save-trigger:hover {
+  border-color: var(--accent-border);
+  color: var(--accent-2);
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 24px 0;
+}
+
+.section-head {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 14px;
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--r);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn:active:not(:disabled) { transform: scale(0.98); }
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.btn-primary:hover:not(:disabled) { background: var(--accent-2); border-color: var(--accent-2); }
+
+.btn-success {
+  background: #16a34a;
+  color: #fff;
+  border-color: #16a34a;
+}
+.btn-success:hover:not(:disabled) { background: #15803d; border-color: #15803d; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-2);
+  border-color: var(--border-2);
+}
+.btn-ghost:hover:not(:disabled) { background: var(--surface-3); color: var(--text); }
+
+.btn-amber {
+  background: #d97706;
+  color: #fff;
+  border-color: #d97706;
+}
+.btn-amber:hover:not(:disabled) { background: #b45309; border-color: #b45309; }
+
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* ── QR ── */
+.qr-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0 16px;
+  gap: 14px;
+}
+
+.qr-frame {
+  background: #fff;
+  border-radius: var(--r);
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.qr-frame img { display: block; width: 240px; height: 240px; object-fit: contain; }
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+.status-pill.waiting {
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  color: var(--accent-2);
+}
+
+.status-pill.ok {
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success);
+}
+
+/* ── Connected bar ── */
+.connected-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  border-radius: var(--r);
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--success);
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+  animation: pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+/* ── Alert ── */
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--r);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.alert-info {
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  color: var(--accent-2);
+}
+
+/* ── Progress ── */
+.prog-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
+.prog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.prog-header span { font-size: 12px; color: var(--text-3); font-weight: 500; }
+.prog-header strong { font-size: 13px; font-weight: 600; color: var(--text); }
+
+.prog-track {
+  background: var(--surface-3);
+  border-radius: 3px;
+  height: 4px;
+  overflow: hidden;
+}
+
+.prog-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.log-scroll {
+  max-height: 360px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-2) transparent;
+}
+
+/* ── Badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+}
+
+.badge-ok {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+
+.badge-fail {
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+
+/* ── Done ── */
+.done-wrap {
+  margin-top: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+}
+
+.done-wrap p {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--success);
+  margin-bottom: 14px;
+}
+
+/* ── Utilities ── */
+.hidden { display: none !important; }
+.mt-4  { margin-top: 4px;  }
+.mt-8  { margin-top: 8px;  }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-20 { margin-top: 20px; }
+
+.spinner {
+  display: inline-block;
+  width: 13px; height: 13px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin .65s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 620px) {
+  .form-row  { grid-template-columns: 1fr; }
+  .mode-grid { grid-template-columns: 1fr; }
+  .main      { padding: 20px 16px 48px; }
+  .topnav    { padding: 0 16px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ── Navigation ── -->
+<nav class="topnav">
+  <a class="nav-brand" href="#">
+    <img src="/static/tkt-logo.png" class="nav-logomark" alt="TKT Church Online Campus">
+  </a>
+  <div class="nav-divider"></div>
+  <div class="nav-appname">
+    <span class="nav-appname-main">TKT ONLINE CAMPUS</span>
+    <span class="nav-appname-sub">Outreach Campaign Console</span>
+  </div>
+  <div class="nav-spacer"></div>
+  <span class="nav-badge">Internal Tool</span>
+</nav>
+
+<!-- ── Main ── -->
+<main class="main">
+
+  <!-- Step tracker -->
+  <div class="step-track">
+    <div class="step-node" id="step-1">
+      <div class="step-num">1</div>
+      <span class="step-name">Upload</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-node" id="step-2">
+      <div class="step-num">2</div>
+      <span class="step-name">Channel</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-node" id="step-3">
+      <div class="step-num">3</div>
+      <span class="step-name">Compose</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step-node" id="step-4">
+      <div class="step-num">4</div>
+      <span class="step-name">Send</span>
+    </div>
+  </div>
+
+  <!-- ── Panel 1: Upload ── -->
+  <div id="panel-1" class="panel">
+    <div class="panel-header">
+      <h2>Upload Contact File</h2>
+      <span class="panel-desc">XLSX · XLS · CSV</span>
+    </div>
+    <div class="panel-body">
+      <div class="dropzone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <svg class="dropzone-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="10" width="28" height="22" rx="2" stroke="#71717a" stroke-width="1.5"/>
+          <path d="M13 4h9l6 6v6" stroke="#71717a" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="14" y1="20" x2="26" y2="20" stroke="#71717a" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="14" y1="25" x2="22" y2="25" stroke="#71717a" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <h3>Drop file here or click to browse</h3>
+        <p style="margin-top:6px;">Contacts spreadsheet with columns: Email, Name, Place, Number, Country, Continent</p>
+        <div class="tag-row">
+          <span class="tag">XLSX</span>
+          <span class="tag">XLS</span>
+          <span class="tag">CSV</span>
+        </div>
+      </div>
+      <input type="file" id="file-input" accept=".xlsx,.xls,.csv" class="hidden">
+
+      <div id="upload-status" class="hidden mt-20">
+        <div class="file-bar">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;opacity:0.5">
+            <rect x="2" y="1" width="12" height="14" rx="1.5" stroke="#a1a1aa" stroke-width="1.2"/>
+            <line x1="5" y1="6" x2="11" y2="6" stroke="#a1a1aa" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="5" y1="9" x2="11" y2="9" stroke="#a1a1aa" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="5" y1="12" x2="8" y2="12" stroke="#a1a1aa" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+          <span class="file-bar-name" id="file-name"></span>
+          <span class="file-bar-count" id="file-count"></span>
+        </div>
+        <div class="tbl-wrap">
+          <table id="preview-table"></table>
+        </div>
+      </div>
+    </div>
+    <div id="upload-actions" class="panel-footer hidden">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('file-input').click()">Replace file</button>
+      <button class="btn btn-primary" onclick="goStep(2)">Continue</button>
+    </div>
+  </div>
+
+  <!-- ── Panel 2: Channel ── -->
+  <div id="panel-2" class="panel hidden">
+    <div class="panel-header">
+      <h2>Select Outreach Channel</h2>
+    </div>
+    <div class="panel-body">
+      <div class="mode-grid">
+        <!-- Gmail card -->
+        <div class="mode-card" id="mode-email" onclick="selectMode('email')">
+          <svg class="mode-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <!-- envelope body -->
+            <rect class="gmail-body" x="2" y="10" width="44" height="30" rx="3"/>
+            <!-- left red panel -->
+            <rect class="gmail-env" x="2" y="10" width="11" height="30" rx="3"/>
+            <rect class="gmail-env" x="2" y="13" width="11" height="27"/>
+            <!-- right red panel -->
+            <rect class="gmail-env" x="35" y="10" width="11" height="30" rx="3"/>
+            <rect class="gmail-env" x="35" y="13" width="11" height="27"/>
+            <!-- M flap — white chevron -->
+            <path class="gmail-body" d="M2 10 L24 27 L46 10Z"/>
+            <!-- M flap red outline -->
+            <path class="gmail-flap" d="M2 10 L13 18.5 L13 10Z"/>
+            <path class="gmail-flap" d="M35 10 L35 18.5 L46 10Z"/>
+            <path class="gmail-flap" fill="none" stroke-width="0" d="M13 18.5 L24 27 L35 18.5"/>
+          </svg>
+          <h3>Email Campaign</h3>
+          <p>Send personalised HTML emails via Gmail SMTP. Supports inline image and document attachments.</p>
+        </div>
+
+        <!-- WhatsApp card -->
+        <div class="mode-card" id="mode-whatsapp" onclick="selectMode('whatsapp')">
+          <svg class="mode-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <!-- rounded square bg -->
+            <rect class="wa-bg" width="48" height="48" rx="10"/>
+            <!-- speech bubble -->
+            <path class="wa-bubble" d="M24 8C15.16 8 8 15.16 8 24c0 2.94.77 5.7 2.12 8.1L8 40l8.12-2.08A15.94 15.94 0 0024 40c8.84 0 16-7.16 16-16S32.84 8 24 8z"/>
+            <!-- phone handset -->
+            <path class="wa-phone" d="M32.4 28.8c-.5-.26-2.96-1.46-3.42-1.62-.46-.16-.8-.24-1.14.26-.34.5-1.3 1.62-1.6 1.96-.28.34-.58.38-1.08.12-2.1-.98-3.54-1.84-4.98-4.14-.38-.64.38-.6 1.08-2 .18-.38.08-.7-.04-.98-.14-.28-1.14-2.8-1.56-3.82-.42-.98-.84-.84-1.14-.86h-.98c-.34 0-.88.12-1.34.6-.46.48-1.76 1.72-1.76 4.18s1.8 4.86 2.06 5.2c.26.32 3.52 5.38 8.52 7.52 3.18 1.38 4.42 1.48 6.02 1.24.96-.14 2.96-1.22 3.38-2.38.42-1.16.42-2.16.28-2.36-.12-.24-.44-.36-.94-.62z"/>
+          </svg>
+          <h3>WhatsApp Blast</h3>
+          <p>Send personalised messages with flyer image via WhatsApp Web automation. Session is persistent.</p>
+        </div>
+      </div>
+    </div>
+    <div class="panel-footer">
+      <button class="btn btn-ghost btn-sm" onclick="goStep(1)">Back</button>
+      <button class="btn btn-primary" id="btn-mode-next" onclick="goStep(3)" disabled>Continue</button>
+    </div>
+  </div>
+
+  <!-- ── Panel 3a: Email ── -->
+  <div id="panel-3-email" class="panel hidden">
+    <div class="panel-header">
+      <h2>Compose Email</h2>
+      <span class="panel-desc" id="email-count-label"></span>
+    </div>
+    <div class="panel-body">
+
+      <div class="form-row">
+        <div class="field">
+          <label>Sender Address</label>
+          <input type="email" id="email-sender" placeholder="your@gmail.com">
+        </div>
+        <div class="field">
+          <label style="display:flex;align-items:center;">
+            App Password
+            <div class="info-popover-wrap">
+              <button type="button" class="info-btn" onclick="togglePwInfo(event)" title="How to generate an App Password">i</button>
+              <div class="info-popover" id="pw-info-popover">
+                <h4>How to generate a Gmail App Password</h4>
+                <div class="prereq">2-Step Verification must be enabled on your Google account first.</div>
+                <ol>
+                  <li>Go to <strong style="color:var(--text)">myaccount.google.com</strong></li>
+                  <li>Navigate to <strong style="color:var(--text)">Security</strong></li>
+                  <li>Under <em>How you sign in to Google</em>, click <strong style="color:var(--text)">2-Step Verification</strong></li>
+                  <li>Scroll to the bottom and click <strong style="color:var(--text)">App passwords</strong></li>
+                  <li>Give it a name — e.g. <code>TKT Outreach</code> — then click <strong style="color:var(--text)">Create</strong></li>
+                  <li>Copy the <strong style="color:var(--text)">16-character password</strong> shown</li>
+                </ol>
+                <p class="pw-note">You won't see the password again after closing that screen. Paste it here — not your regular Gmail password.</p>
+              </div>
+            </div>
+          </label>
+          <div class="pw-field">
+            <input type="password" id="email-password" placeholder="16-character Gmail app password">
+            <button type="button" class="pw-btn" id="pw-toggle" onclick="togglePassword()" title="Show / hide">
+              <svg id="pw-icon-show" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke="currentColor" stroke-width="1.2"/>
+                <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+              <svg id="pw-icon-hide" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" class="hidden">
+                <path d="M1 1l14 14M6.3 6.4A2 2 0 0010 10M3 4.3C1.9 5.5 1 7 1 7s2 4.5 7 5c1.2.1 2.3-.1 3.3-.5M13 11.7C14.1 10.5 15 9 15 9s-2-4.5-7-5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <p class="hint">Generate at myaccount.google.com → Security → App passwords</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Subject Line</label>
+        <input type="text" id="email-subject" value="{first_name}, Africa Is Calling – Join Our Weekly Faith Fellowship">
+        <p class="hint">Use <code>{first_name}</code> for personalisation</p>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label>Church Flyer Image <span class="field-opt">(optional)</span></label>
+          <div class="attach-field">
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('img-upload').click()">Browse</button>
+            <span class="attach-label" id="img-name">No image selected</span>
+          </div>
+          <input type="file" id="img-upload" accept="image/*" class="hidden">
+        </div>
+        <div class="field">
+          <label>Attachment <span class="field-opt">(optional)</span></label>
+          <div class="attach-field">
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('doc-upload').click()">Browse</button>
+            <span class="attach-label" id="doc-name">No document selected</span>
+          </div>
+          <input type="file" id="doc-upload" accept=".pdf,.xlsx,.xls,.csv" class="hidden">
+          <p class="hint">PDF, XLSX, XLS, CSV</p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Message Body</label>
+        <div class="preset-row">
+          <span class="preset-chip" onclick="setPreset('email','africa')">Africa Calling</span>
+          <span class="preset-chip" onclick="setPreset('email','welcome')">Welcome Email</span>
+          <span class="preset-chip" onclick="setPreset('email','blank')">Blank</span>
+          <button class="tmpl-save-trigger" onclick="openTmplSave('email')">+ Save as template</button>
+        </div>
+        <!-- save name row (hidden until triggered) -->
+        <div class="tmpl-save-row hidden" id="email-tmpl-save-row">
+          <input type="text" id="email-tmpl-name" placeholder="Template name (e.g. Sunday Invite)" maxlength="40">
+          <button class="btn btn-primary btn-sm" onclick="commitTmpl('email')">Save</button>
+          <button class="btn btn-ghost btn-sm" onclick="closeTmplSave('email')">Cancel</button>
+        </div>
+        <!-- stored templates -->
+        <div class="tmpl-bar hidden" id="email-tmpl-bar">
+          <span class="tmpl-bar-label">My Templates</span>
+          <span class="tmpl-bar-count" id="email-tmpl-count"></span>
+        </div>
+        <div class="tmpl-chips" id="email-tmpl-chips"></div>
+        <textarea id="email-body" placeholder="Write your message here. Supports HTML. Use {first_name} to personalise."></textarea>
+        <p class="hint">Supports HTML. Use <code>{first_name}</code> to insert the recipient's first name.</p>
+      </div>
+
+    </div>
+    <div class="panel-footer">
+      <button class="btn btn-ghost btn-sm" onclick="goStep(2)">Back</button>
+      <button class="btn btn-success" onclick="startEmailSend()">Send to <span id="email-count">?</span> contacts</button>
+    </div>
+  </div>
+
+  <!-- ── Panel 3b: WhatsApp ── -->
+  <div id="panel-3-whatsapp" class="panel hidden">
+    <div class="panel-header">
+      <h2>WhatsApp Setup</h2>
+      <span class="panel-desc" id="wa-count-label"></span>
+    </div>
+    <div class="panel-body">
+
+      <div class="form-row">
+        <div class="field">
+          <label>Identify Recipients By</label>
+          <select id="wa-id-type">
+            <option value="name">Name (searches WhatsApp contacts by name)</option>
+            <option value="number">Phone Number (uses Number column)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Flyer Image <span class="field-opt">(optional)</span></label>
+          <div class="attach-field">
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('wa-img-upload').click()">Browse</button>
+            <span class="attach-label" id="wa-img-name">No image — text only</span>
+          </div>
+          <input type="file" id="wa-img-upload" accept="image/*" class="hidden">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Message</label>
+        <div class="preset-row">
+          <span class="preset-chip" onclick="setPreset('wa','africa')">Africa Calling</span>
+          <span class="preset-chip" onclick="setPreset('wa','welcome')">Welcome</span>
+          <span class="preset-chip" onclick="setPreset('wa','blank')">Blank</span>
+          <button class="tmpl-save-trigger" onclick="openTmplSave('wa')">+ Save as template</button>
+        </div>
+        <!-- save name row -->
+        <div class="tmpl-save-row hidden" id="wa-tmpl-save-row">
+          <input type="text" id="wa-tmpl-name" placeholder="Template name (e.g. Sunday Invite)" maxlength="40">
+          <button class="btn btn-primary btn-sm" onclick="commitTmpl('wa')">Save</button>
+          <button class="btn btn-ghost btn-sm" onclick="closeTmplSave('wa')">Cancel</button>
+        </div>
+        <!-- stored templates -->
+        <div class="tmpl-bar hidden" id="wa-tmpl-bar">
+          <span class="tmpl-bar-label">My Templates</span>
+          <span class="tmpl-bar-count" id="wa-tmpl-count"></span>
+        </div>
+        <div class="tmpl-chips" id="wa-tmpl-chips"></div>
+        <textarea id="wa-body" placeholder="Write your message. Use {first_name} to personalise. Line breaks are preserved."></textarea>
+        <p class="hint">Use <code>{first_name}</code> for the recipient's first name. Line breaks are preserved.</p>
+      </div>
+
+      <div class="divider"></div>
+
+      <p class="section-head">WhatsApp Connection</p>
+      <p style="font-size:12px;color:var(--text-3);margin-bottom:16px;line-height:1.6;">
+        Click Connect to launch WhatsApp Web in the background. Scan the QR code with your phone.
+        Your session is saved to disk — you only need to scan once per installation.
+      </p>
+
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <button class="btn btn-amber" id="btn-connect-wa" onclick="connectWhatsApp()">Connect WhatsApp</button>
+        <button class="btn btn-ghost btn-sm" id="btn-wa-reset" onclick="resetWhatsApp()">Reset session</button>
+      </div>
+
+      <div id="qr-section" class="hidden">
+        <div class="qr-wrap">
+          <div class="qr-frame"><img id="qr-img" src="" alt="WhatsApp QR Code"></div>
+          <div class="status-pill waiting" id="qr-status">
+            <span class="spinner"></span> Waiting for scan
+          </div>
+        </div>
+      </div>
+
+      <div id="wa-logged-in" class="hidden">
+        <div class="connected-bar">
+          <div class="pulse-dot"></div>
+          WhatsApp connected — ready to send
+        </div>
+      </div>
+
+    </div>
+    <div class="panel-footer">
+      <button class="btn btn-ghost btn-sm" onclick="goStep(2)">Back</button>
+      <button class="btn btn-success" id="btn-send-wa" onclick="startWaSend()" disabled>
+        Send to <span id="wa-count">?</span> contacts
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Panel 4: Progress ── -->
+  <div id="panel-4" class="panel hidden">
+    <div class="panel-header">
+      <h2>Sending in Progress</h2>
+    </div>
+    <div class="panel-body">
+
+      <div class="prog-card">
+        <div class="prog-header">
+          <span>Progress</span>
+          <strong id="progress-label">0 / 0</strong>
+        </div>
+        <div class="prog-track">
+          <div class="prog-fill" id="progress-bar" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="log-scroll">
+        <table id="log-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Identifier</th>
+              <th>Status</th>
+              <th>Detail</th>
+            </tr>
+          </thead>
+          <tbody id="log-body"></tbody>
+        </table>
+      </div>
+
+      <div id="done-banner" class="hidden">
+        <div class="done-wrap">
+          <p id="done-msg"></p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost btn-sm" onclick="downloadReport()">Download report (CSV)</button>
+            <button class="btn btn-primary btn-sm" onclick="location.reload()">New campaign</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+const S = {
+  filepath: null, columns: [], total: 0,
+  mode: null,
+  emailImagePath: null, emailDocPath: null,
+  waImagePath: null, waConnected: false,
+  jobId: null, jobLog: [], qrPollTimer: null,
+};
+
+// ── Presets ───────────────────────────────────────────────────────────────────
+const PRESETS = {
+  email: {
+    africa:`<html>\n<body style="font-family:Arial,sans-serif;font-size:15px;color:#222;line-height:1.5;margin:0;padding:16px;">\nDear {first_name},<br>\nGreetings from the Online Campus of TKT Church, on behalf of Bishop Samuel Patta and Ps. Merlyn Patta.<br>\nWe are launching a weekly <strong>Africa Online Fellowship</strong> scheduled in African time zones, so you can grow in faith, prayer, and the Word without time barriers.<br>\nIf you would like to join us, please register below:<br>\n<strong><a href="https://forms.gle/bZHoGjNGdBkjfFm28">Click Here to Register</a></strong><br>\nFor any questions, you may contact us on WhatsApp:<br>\nSis. Deepshika – +91 91006 85544 (<a href="https://wa.link/8duwnq">Chat on WhatsApp</a>)<br>\nSis. Sharon – +91 99729 87730 (<a href="https://wa.link/kyoo0s">Chat on WhatsApp</a>)<br>\nBro. Ashish – +91 87905 88431 (<a href="https://wa.link/4suhtc">Chat on WhatsApp</a>)<br><br>\nAll meetings are held on <strong>Zoom and are completely free.</strong> To know more about us, visit our YouTube channel:<br>\n<a href="https://www.youtube.com/@tktchurchofficial">https://www.youtube.com/@tktchurchofficial</a><br>\nWe look forward to welcoming you.<br>\nBlessings,<br>TKT Online Campus\n</body>\n</html>`,
+    welcome:`<html>\n<body style="font-family:Arial,sans-serif;font-size:15px;color:#222;line-height:1.6;margin:0;padding:16px;">\nDear {first_name},<br><br>\nWarm greetings from the <strong>TKT Online Campus</strong>, on behalf of Bishop Samuel Patta and Ps. Merlyn Patta.<br><br>\nWe are so glad you are here. <strong>Welcome to the family!</strong><br><br>\nAll meetings are held on <strong>Zoom</strong> and are completely <strong>free</strong>.<br><br>\n<strong>You will soon receive a WhatsApp message from our official number: +91 90000 33551</strong><br><br>\n<a href="https://www.youtube.com/@tktchurchofficial">https://www.youtube.com/@tktchurchofficial</a><br><br>\nWith love and blessings,<br>TKT Online Campus\n</body>\n</html>`,
+    blank:'',
+  },
+  wa: {
+    africa:`Hello {first_name},\n\nGreetings from TKT Online Campus!\n\nWe are launching a weekly Africa Online Fellowship in African time zones — completely free on Zoom.\n\nRegister here: https://forms.gle/bZHoGjNGdBkjfFm28\n\nFor questions:\nSis. Deepshika: +91 91006 85544\nSis. Sharon: +91 99729 87730\nBro. Ashish: +91 87905 88431\n\nGod bless you!\nTKT Online Campus`,
+    welcome:`Dear {first_name},\n\nWarm greetings from TKT Online Campus!\n\nWelcome to the family! You are now part of a global community of believers united by faith.\n\nWe meet weekly on Zoom — completely free.\n\nYou will receive a message from our official number: +91 90000 33551\n\nYouTube: https://www.youtube.com/@tktchurchofficial\n\nWith love,\nTKT Online Campus`,
+    blank:'',
+  },
+};
+
+// ── Password toggle ────────────────────────────────────────────────────────────
+function togglePwInfo(e) {
+  e.stopPropagation();
+  document.getElementById('pw-info-popover').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  const pop = document.getElementById('pw-info-popover');
+  if (pop && !pop.closest('.info-popover-wrap').contains(e.target)) pop.classList.remove('open');
+});
+
+function togglePassword() {
+  const inp  = document.getElementById('email-password');
+  const show = inp.type === 'password';
+  inp.type   = show ? 'text' : 'password';
+  document.getElementById('pw-icon-show').classList.toggle('hidden',  show);
+  document.getElementById('pw-icon-hide').classList.toggle('hidden', !show);
+}
+
+// ── Steps ─────────────────────────────────────────────────────────────────────
+function goStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById(`step-${i}`).className =
+      'step-node' + (i < n ? ' done' : i === n ? ' active' : '');
+  }
+  document.getElementById('panel-1').classList.toggle('hidden', n !== 1);
+  document.getElementById('panel-2').classList.toggle('hidden', n !== 2);
+  document.getElementById('panel-3-email').classList.toggle('hidden',    !(n === 3 && S.mode === 'email'));
+  document.getElementById('panel-3-whatsapp').classList.toggle('hidden', !(n === 3 && S.mode === 'whatsapp'));
+  document.getElementById('panel-4').classList.toggle('hidden', n !== 4);
+
+  if (n === 3 && S.mode === 'email') {
+    document.getElementById('email-count').textContent      = S.total;
+    document.getElementById('email-count-label').textContent = S.total + ' contacts';
+    renderTmpls('email');
+  }
+  if (n === 3 && S.mode === 'whatsapp') {
+    document.getElementById('wa-count').textContent       = S.total;
+    document.getElementById('wa-count-label').textContent = S.total + ' contacts';
+    renderTmpls('wa');
+  }
+}
+
+// ── Upload ────────────────────────────────────────────────────────────────────
+const dropZone  = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+function handleFile(file) {
+  const fd = new FormData(); fd.append('file', file);
+  fetch('/upload', { method:'POST', body:fd }).then(r => r.json()).then(data => {
+    if (data.error) { alert('Upload error: ' + data.error); return; }
+    S.filepath = data.filepath; S.columns = data.columns; S.total = data.total;
+    document.getElementById('file-name').textContent  = file.name;
+    document.getElementById('file-count').textContent = data.total + ' contacts';
+    renderPreview(data.columns, data.preview);
+    document.getElementById('upload-status').classList.remove('hidden');
+    document.getElementById('upload-actions').classList.remove('hidden');
+  }).catch(e => alert('Upload failed: ' + e));
+}
+
+function renderPreview(columns, rows) {
+  const t = document.getElementById('preview-table');
+  const head = `<thead><tr>${columns.map(c=>`<th>${c}</th>`).join('')}</tr></thead>`;
+  const body = `<tbody>${rows.map(r=>`<tr>${columns.map(c=>`<td>${r[c]??''}</td>`).join('')}</tr>`).join('')}</tbody>`;
+  t.innerHTML = head + body;
+}
+
+// ── Mode ──────────────────────────────────────────────────────────────────────
+function selectMode(m) {
+  S.mode = m;
+  document.getElementById('mode-email').classList.toggle('selected',    m === 'email');
+  document.getElementById('mode-whatsapp').classList.toggle('selected', m === 'whatsapp');
+  document.getElementById('btn-mode-next').disabled = false;
+}
+
+// ── Presets ───────────────────────────────────────────────────────────────────
+function setPreset(ch, key) {
+  document.getElementById(ch === 'email' ? 'email-body' : 'wa-body').value = PRESETS[ch][key];
+  if (ch === 'email' && key === 'africa')  document.getElementById('email-subject').value = '{first_name}, Africa Is Calling – Join Our Weekly Faith Fellowship';
+  if (ch === 'email' && key === 'welcome') document.getElementById('email-subject').value = 'Welcome to TKT Online Campus, {first_name}!';
+}
+
+// ── Custom Templates (localStorage, max 4 per channel) ────────────────────────
+const TMPL_MAX = 4;
+const TMPL_KEY = ch => `tkt_tmpl_${ch}`;
+
+function _getTmpls(ch) {
+  try { return JSON.parse(localStorage.getItem(TMPL_KEY(ch)) || '[]'); } catch { return []; }
+}
+
+function _saveTmpls(ch, arr) {
+  localStorage.setItem(TMPL_KEY(ch), JSON.stringify(arr));
+}
+
+function openTmplSave(ch) {
+  const bodyId = ch === 'email' ? 'email-body' : 'wa-body';
+  if (!document.getElementById(bodyId).value.trim()) {
+    alert('Write a message first before saving it as a template.'); return;
+  }
+  document.getElementById(`${ch}-tmpl-save-row`).classList.remove('hidden');
+  document.getElementById(`${ch}-tmpl-name`).focus();
+}
+
+function closeTmplSave(ch) {
+  document.getElementById(`${ch}-tmpl-save-row`).classList.add('hidden');
+  document.getElementById(`${ch}-tmpl-name`).value = '';
+}
+
+function commitTmpl(ch) {
+  const nameEl = document.getElementById(`${ch}-tmpl-name`);
+  const name   = nameEl.value.trim();
+  if (!name) { nameEl.focus(); return; }
+  const bodyId = ch === 'email' ? 'email-body' : 'wa-body';
+  const body   = document.getElementById(bodyId).value.trim();
+  if (!body) { alert('Message is empty.'); return; }
+
+  let arr = _getTmpls(ch);
+  // Remove if same name already exists
+  arr = arr.filter(t => t.name !== name);
+  // Push to front
+  arr.unshift({ name, body });
+  // Cap at 4 — oldest (last) dropped
+  if (arr.length > TMPL_MAX) arr = arr.slice(0, TMPL_MAX);
+  _saveTmpls(ch, arr);
+  closeTmplSave(ch);
+  renderTmpls(ch);
+}
+
+function loadTmpl(ch, idx) {
+  const arr    = _getTmpls(ch);
+  const tmpl   = arr[idx];
+  if (!tmpl) return;
+  const bodyId = ch === 'email' ? 'email-body' : 'wa-body';
+  document.getElementById(bodyId).value = tmpl.body;
+}
+
+function deleteTmpl(ch, idx) {
+  const arr = _getTmpls(ch);
+  arr.splice(idx, 1);
+  _saveTmpls(ch, arr);
+  renderTmpls(ch);
+}
+
+function renderTmpls(ch) {
+  const arr      = _getTmpls(ch);
+  const chips    = document.getElementById(`${ch}-tmpl-chips`);
+  const bar      = document.getElementById(`${ch}-tmpl-bar`);
+  const countEl  = document.getElementById(`${ch}-tmpl-count`);
+  if (!chips) return;
+
+  if (arr.length === 0) {
+    chips.innerHTML = '';
+    bar.classList.add('hidden');
+    return;
+  }
+
+  bar.classList.remove('hidden');
+  countEl.textContent = `${arr.length} / ${TMPL_MAX}${arr.length === TMPL_MAX ? ' — next save replaces oldest' : ''}`;
+
+  chips.innerHTML = arr.map((t, i) => `
+    <div class="tmpl-chip" title="${t.body.slice(0,120).replace(/"/g,'&quot;')}">
+      <button class="tmpl-chip-load" onclick="loadTmpl('${ch}',${i})">${t.name}</button>
+      <button class="tmpl-chip-del" onclick="deleteTmpl('${ch}',${i})" title="Delete">&#x2715;</button>
+    </div>
+  `).join('');
+}
+
+
+// ── File attach handlers ──────────────────────────────────────────────────────
+function _uploadFile(inputId, endpoint, fieldName, pathKey, labelId) {
+  const el = document.getElementById(inputId);
+  el.addEventListener('change', function() {
+    if (!this.files[0]) return;
+    const fd = new FormData(); fd.append(fieldName, this.files[0]);
+    fetch(endpoint, { method:'POST', body:fd }).then(r => r.json()).then(d => {
+      if (d.error) { alert(d.error); return; }
+      S[pathKey] = d[Object.keys(d)[0]];
+      const lbl = document.getElementById(labelId);
+      lbl.textContent = this.files[0].name;
+      lbl.classList.add('ok');
+    });
+  });
+}
+_uploadFile('img-upload',    '/upload/image',    'image',    'emailImagePath', 'img-name');
+_uploadFile('doc-upload',    '/upload/document', 'document', 'emailDocPath',   'doc-name');
+_uploadFile('wa-img-upload', '/upload/image',    'image',    'waImagePath',    'wa-img-name');
+
+// ── Email send ────────────────────────────────────────────────────────────────
+function startEmailSend() {
+  const sender   = document.getElementById('email-sender').value.trim();
+  const password = document.getElementById('email-password').value.trim();
+  const subject  = document.getElementById('email-subject').value.trim();
+  const body     = document.getElementById('email-body').value.trim();
+  if (!sender || !password) { alert('Sender address and app password are required.'); return; }
+  if (!body) { alert('Message body cannot be empty.'); return; }
+  goStep(4); resetProgress(S.total);
+  fetch('/send/email', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ filepath:S.filepath, message:body, subject, sender, password,
+                           image_path:S.emailImagePath||'', doc_path:S.emailDocPath||'' })
+  }).then(r=>r.json()).then(d => {
+    if (d.error) { alert('Error: '+d.error); return; }
+    S.jobId = d.job_id; listenProgress(d.job_id);
+  });
+}
+
+// ── WhatsApp ──────────────────────────────────────────────────────────────────
+function connectWhatsApp() {
+  document.getElementById('btn-connect-wa').disabled = true;
+  document.getElementById('btn-connect-wa').innerHTML = '<span class="spinner"></span> Starting…';
+  window.open('/debug','wa_live','width=1300,height=950,menubar=no,toolbar=no,location=no');
+  fetch('/wa/start',{method:'POST'}).then(r=>r.json()).then(() => {
+    document.getElementById('qr-section').classList.remove('hidden');
+    startQrPoll();
+  }).catch(e => {
+    alert('Failed to start: '+e);
+    document.getElementById('btn-connect-wa').disabled = false;
+    document.getElementById('btn-connect-wa').textContent = 'Connect WhatsApp';
+  });
+}
+
+function startQrPoll() { pollQr(); S.qrPollTimer = setInterval(pollQr, 2500); }
+
+function pollQr() {
+  fetch('/wa/qr').then(r=>r.json()).then(d => {
+    if (d.logged_in) {
+      clearInterval(S.qrPollTimer); S.waConnected = true;
+      document.getElementById('qr-section').classList.add('hidden');
+      document.getElementById('wa-logged-in').classList.remove('hidden');
+      document.getElementById('btn-send-wa').disabled = false;
+      document.getElementById('qr-status').className = 'status-pill ok';
+    } else if (d.image) {
+      document.getElementById('qr-img').src = 'data:image/png;base64,'+d.image;
+      document.getElementById('qr-section').classList.remove('hidden');
+    }
+  });
+}
+
+function resetWhatsApp() {
+  clearInterval(S.qrPollTimer); S.waConnected = false;
+  fetch('/wa/reset',{method:'POST'});
+  document.getElementById('qr-section').classList.add('hidden');
+  document.getElementById('wa-logged-in').classList.add('hidden');
+  document.getElementById('btn-send-wa').disabled = true;
+  document.getElementById('btn-connect-wa').disabled = false;
+  document.getElementById('btn-connect-wa').textContent = 'Connect WhatsApp';
+}
+
+function startWaSend() {
+  const body      = document.getElementById('wa-body').value.trim();
+  const useNumber = document.getElementById('wa-id-type').value === 'number';
+  if (!body) { alert('Message cannot be empty.'); return; }
+  if (!S.waConnected) { alert('Please connect WhatsApp first.'); return; }
+  goStep(4); resetProgress(S.total);
+  fetch('/send/whatsapp', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ filepath:S.filepath, message:body, image_path:S.waImagePath||'', use_number:useNumber })
+  }).then(r=>r.json()).then(d => {
+    if (d.error) { alert('Error: '+d.error); return; }
+    S.jobId = d.job_id; listenProgress(d.job_id);
+  });
+}
+
+// ── Progress ──────────────────────────────────────────────────────────────────
+function resetProgress(total) {
+  S.jobLog = [];
+  document.getElementById('log-body').innerHTML = '';
+  document.getElementById('progress-bar').style.width = '0%';
+  document.getElementById('progress-label').textContent = `0 / ${total}`;
+  document.getElementById('done-banner').classList.add('hidden');
+}
+
+function listenProgress(jobId) {
+  const es = new EventSource(`/progress/${jobId}`);
+  let sent = 0;
+  es.onmessage = e => {
+    const d = JSON.parse(e.data);
+    if (d.heartbeat) return;
+    if (d.done) { es.close(); showDone(sent); return; }
+    sent++;
+    S.jobLog.push(d);
+    const pct = Math.round((sent / S.total) * 100);
+    document.getElementById('progress-bar').style.width     = pct + '%';
+    document.getElementById('progress-label').textContent   = `${sent} / ${S.total}`;
+    appendLogRow(sent, d);
+  };
+  es.onerror = () => { es.close(); showDone(sent); };
+}
+
+function appendLogRow(n, d) {
+  const tbody = document.getElementById('log-body');
+  const tr    = document.createElement('tr');
+  const badge = d.success
+    ? '<span class="badge badge-ok">Sent</span>'
+    : '<span class="badge badge-fail">Failed</span>';
+  tr.innerHTML = `<td>${n}</td><td>${d.name||'—'}</td><td style="font-family:var(--mono);font-size:11px;">${d.identifier||'—'}</td><td>${badge}</td><td style="color:var(--text-3);font-size:11px;">${d.msg||''}</td>`;
+  tbody.appendChild(tr);
+  tbody.parentElement.scrollTop = tbody.parentElement.scrollHeight;
+}
+
+function showDone(sent) {
+  const failed = S.jobLog.filter(r => !r.success).length;
+  document.getElementById('progress-bar').style.width     = '100%';
+  document.getElementById('progress-label').textContent   = `${S.total} / ${S.total}`;
+  document.getElementById('done-msg').textContent         = `Done — ${sent - failed} sent successfully, ${failed} failed.`;
+  document.getElementById('done-banner').classList.remove('hidden');
+}
+
+function downloadReport() {
+  const rows = [['Name','Identifier','Status','Detail']];
+  S.jobLog.forEach(r => rows.push([r.name, r.identifier, r.success?'Sent':'Failed', r.msg]));
+  const csv  = rows.map(r => r.map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a    = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([csv],{type:'text/csv'})),
+    download: `outreach_${new Date().toISOString().slice(0,10)}.csv`
+  });
+  a.click();
+}
+</script>
+</body>
+</html>

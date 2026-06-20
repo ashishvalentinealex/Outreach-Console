@@ -1,0 +1,19 @@
+# Secrets
+.env
+
+# Runtime data — not source code
+chrome_profile/
+logs/
+uploads/
+images/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# OS
+.DS_Store
+Thumbs.db

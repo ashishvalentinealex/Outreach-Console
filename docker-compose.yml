@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  church-app:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./uploads:/tmp/uploads
+      - ./chrome_profile:/tmp/chrome_profile
+      - ./logs:/tmp/logs
+      - ./images:/tmp/images
+    env_file:
+      - .env
+    restart: unless-stopped
+    shm_size: '2gb'
