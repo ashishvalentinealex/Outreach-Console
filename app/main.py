@@ -237,10 +237,16 @@ def debug_screenshot():
     if _wa_sender and _wa_sender.driver:
         try:
             png = _wa_sender.driver.get_screenshot_as_png()
-            return Response(png, mimetype="image/png")
-        except Exception:
-            pass
-    return Response(b"", mimetype="image/png")
+            if png:
+                return Response(png, mimetype="image/png")
+        except Exception as e:
+            logger.warning("debug screenshot failed: %s", e)
+    # Return a tiny valid grey PNG so the browser doesn't show a broken image icon
+    from PIL import Image as _Image
+    from io import BytesIO as _BytesIO
+    buf = _BytesIO()
+    _Image.new("RGB", (1280, 900), (30, 30, 35)).save(buf, format="PNG")
+    return Response(buf.getvalue(), mimetype="image/png")
 
 
 @app.route("/wa/reset", methods=["POST"])

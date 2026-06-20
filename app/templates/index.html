@@ -1679,16 +1679,23 @@ function startEmailSend() {
 
 // ── WhatsApp ──────────────────────────────────────────────────────────────────
 function connectWhatsApp() {
-  document.getElementById('btn-connect-wa').disabled = true;
-  document.getElementById('btn-connect-wa').innerHTML = '<span class="spinner"></span> Starting…';
+  const btn = document.getElementById('btn-connect-wa');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Starting…';
   window.open('/debug','wa_live','width=1300,height=950,menubar=no,toolbar=no,location=no');
-  fetch('/wa/start',{method:'POST'}).then(r=>r.json()).then(() => {
+  fetch('/wa/start',{method:'POST'}).then(r=>r.json()).then(d => {
+    if (d.error) {
+      alert('WhatsApp failed to start:\n\n' + d.error + '\n\nCheck the console window for details.');
+      btn.disabled = false;
+      btn.textContent = 'Connect WhatsApp';
+      return;
+    }
     document.getElementById('qr-section').classList.remove('hidden');
     startQrPoll();
   }).catch(e => {
     alert('Failed to start: '+e);
-    document.getElementById('btn-connect-wa').disabled = false;
-    document.getElementById('btn-connect-wa').textContent = 'Connect WhatsApp';
+    btn.disabled = false;
+    btn.textContent = 'Connect WhatsApp';
   });
 }
 

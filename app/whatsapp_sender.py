@@ -90,8 +90,13 @@ def _build_chrome_options() -> webdriver.ChromeOptions:
     opts.add_argument(f"--user-data-dir={CHROME_PROFILE}")
     opts.add_argument("--window-size=1280,900")
     opts.add_argument("--disable-gpu")
+    opts.add_argument("--disable-software-rasterizer")
+    opts.add_argument("--disable-dev-shm-usage")
+    opts.add_argument("--no-first-run")
+    opts.add_argument("--no-default-browser-check")
+    opts.add_argument("--disable-extensions")
 
-    # --no-sandbox is required on Linux; not needed (and slightly less secure) on Windows
+    # --no-sandbox is required on Linux; on Windows it's optional but harmless
     if sys.platform != "win32":
         opts.add_argument("--no-sandbox")
 
