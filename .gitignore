@@ -19,6 +19,9 @@ dist/
 build/
 *.spec.bak
 
+# Virtual environment created by build scripts
+venv/
+
 # OS
 .DS_Store
 Thumbs.db
